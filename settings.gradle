@@ -1,0 +1,9 @@
+rootProject.name = 'uber-eats-clone'
+
+include 'eureka-server'
+include 'gateway-service'
+include 'auth-service'
+include 'restaurant-service'
+include 'order-service'
+include 'delivery-service'
+include 'notification-service'
