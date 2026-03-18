@@ -8,6 +8,8 @@ import com.august.restaurant.repository.RestaurantRepository;
 import com.august.restaurant.service.interfaces.RestaurantService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,6 +30,15 @@ public class RestaurantServiceImpl implements RestaurantService {
         Restaurant savedRestaurant = restaurantRepository.save(restaurant);
 
         return restaurantMapper.toDTO(savedRestaurant);
+    }
+
+    @Override
+    public Page<RestaurantResponseDTO> getAllActiveRestaurants(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+
+        Page<Restaurant> restaurantPage = restaurantRepository.findByIsActiveTrue(pageRequest);
+
+        return restaurantPage.map(restaurantMapper::toDTO);
     }
 
 }
