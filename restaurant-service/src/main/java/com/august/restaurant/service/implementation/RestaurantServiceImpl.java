@@ -1,8 +1,8 @@
 package com.august.restaurant.service.implementation;
 
 import com.august.common.event.RestaurantRegisteredEvent;
-import com.august.restaurant.dto.RestaurantRequestDTO;
-import com.august.restaurant.dto.RestaurantResponseDTO;
+import com.august.restaurant.dto.restaurantdto.RestaurantRequestDTO;
+import com.august.restaurant.dto.restaurantdto.RestaurantResponseDTO;
 import com.august.restaurant.entity.Restaurant;
 import com.august.restaurant.mapper.RestaurantMapper;
 import com.august.restaurant.repository.RestaurantRepository;

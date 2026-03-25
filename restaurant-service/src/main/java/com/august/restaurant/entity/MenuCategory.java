@@ -25,4 +25,5 @@ public class MenuCategory {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
+
 }

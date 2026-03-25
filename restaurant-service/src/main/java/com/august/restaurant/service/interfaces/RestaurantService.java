@@ -1,7 +1,7 @@
 package com.august.restaurant.service.interfaces;
 
-import com.august.restaurant.dto.RestaurantRequestDTO;
-import com.august.restaurant.dto.RestaurantResponseDTO;
+import com.august.restaurant.dto.restaurantdto.RestaurantRequestDTO;
+import com.august.restaurant.dto.restaurantdto.RestaurantResponseDTO;
 import org.springframework.data.domain.Page;
 
 public interface RestaurantService {

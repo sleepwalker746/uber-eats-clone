@@ -1,7 +1,7 @@
 package com.august.restaurant.controller;
 
-import com.august.restaurant.dto.RestaurantRequestDTO;
-import com.august.restaurant.dto.RestaurantResponseDTO;
+import com.august.restaurant.dto.restaurantdto.RestaurantRequestDTO;
+import com.august.restaurant.dto.restaurantdto.RestaurantResponseDTO;
 import com.august.restaurant.service.interfaces.RestaurantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
