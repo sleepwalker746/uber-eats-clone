@@ -11,7 +11,6 @@ import org.mapstruct.MappingConstants;
 public interface MenuCategoryMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "restaurantId", ignore = true)
     MenuCategory toEntity(MenuCategoryRequestDTO menuCategoryRequestDTO);
 
     MenuCategoryResponseDTO toDto(MenuCategory menuCategory);

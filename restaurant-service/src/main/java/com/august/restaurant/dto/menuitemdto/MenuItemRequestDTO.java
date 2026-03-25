@@ -23,8 +23,4 @@ public class MenuItemRequestDTO {
     @Positive(message = "Price should be more than 0")
     private BigDecimal price;
 
-    @NotNull(message = "Category ID is required!")
-    private Long categoryId;
-
-
 }

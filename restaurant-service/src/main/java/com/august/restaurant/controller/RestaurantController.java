@@ -22,7 +22,7 @@ public class RestaurantController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RestaurantResponseDTO> register(@Valid @RequestBody RestaurantRequestDTO restaurantRequestDTO) {
-        log.info("Register restaurant with name : {}", restaurantRequestDTO.getName());
+        log.info("Registering restaurant with name : {}", restaurantRequestDTO.getName());
         RestaurantResponseDTO restaurantResponseDTO = restaurantService.createRestaurant(restaurantRequestDTO);
         return ResponseEntity.ok(restaurantResponseDTO);
     }

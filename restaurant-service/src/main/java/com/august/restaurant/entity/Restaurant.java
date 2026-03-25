@@ -19,7 +19,7 @@ public class Restaurant {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, unique = true)
     private String name;
 
     @Column(name = "address", nullable = false)
@@ -28,7 +28,7 @@ public class Restaurant {
     @Column(name = "is_active")
     private Boolean isActive;
 
-    @Column(name = "phone", nullable = false)
+    @Column(name = "phone", nullable = false, unique = true)
     private String phone;
 
     @Column(name = "email", unique = true, nullable = false)

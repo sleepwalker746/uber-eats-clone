@@ -1,15 +1,13 @@
 package com.august.restaurant.dto.menuitemdto;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 @Getter
 @Setter
-@NoArgsConstructor
+@Builder
 public class MenuItemResponseDTO {
 
     private Long id;

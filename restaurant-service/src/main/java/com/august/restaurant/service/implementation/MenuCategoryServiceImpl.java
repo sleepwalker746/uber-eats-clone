@@ -9,6 +9,8 @@ import com.august.restaurant.repository.MenuCategoryRepository;
 import com.august.restaurant.repository.RestaurantRepository;
 import com.august.restaurant.service.interfaces.MenuCategoryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -32,6 +34,17 @@ public class MenuCategoryServiceImpl implements MenuCategoryService {
 
         MenuCategory savedMenuCategory = menuCategoryRepository.save(menuCategory);
         return menuCategoryMapper.toDto(savedMenuCategory);
+
+    }
+
+    @Override
+    public Page<MenuCategoryResponseDTO> getAllMenuCategory(Long restaurantId, Pageable pageable) {
+        return menuCategoryRepository.findAllByRestaurantId(restaurantId, pageable)
+                .map(menuCategory -> MenuCategoryResponseDTO.builder()
+                        .id(menuCategory.getId())
+                        .name(menuCategory.getName())
+                        .imageUrl(menuCategory.getImageUrl())
+                .build());
 
     }
 }
