@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RestaurantRepository extends JpaRepository<Restaurant,Long> {
     Page<Restaurant> findByIsActiveTrue(Pageable pageable);
+    boolean existsByName(String name);
+    boolean existsByPhone(String phone);
 }

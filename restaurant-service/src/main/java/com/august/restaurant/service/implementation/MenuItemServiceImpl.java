@@ -2,6 +2,7 @@ package com.august.restaurant.service.implementation;
 
 import com.august.restaurant.dto.menuitemdto.MenuItemRequestDTO;
 import com.august.restaurant.dto.menuitemdto.MenuItemResponseDTO;
+import com.august.restaurant.dto.menuitemdto.MenuItemUpdateDTO;
 import com.august.restaurant.entity.MenuCategory;
 import com.august.restaurant.entity.MenuItem;
 import com.august.restaurant.mapper.MenuItemMapper;
@@ -10,11 +11,13 @@ import com.august.restaurant.repository.MenuItemRepository;
 import com.august.restaurant.service.interfaces.MenuItemService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class MenuItemServiceImpl implements MenuItemService {
 
@@ -49,5 +52,27 @@ public class MenuItemServiceImpl implements MenuItemService {
                         .isAvailable(item.getIsAvailable())
                         .build()
                 );
+    }
+
+    @Override
+    @Transactional
+    public MenuItemResponseDTO updateMenuItem(Long id, MenuItemUpdateDTO menuItemUpdateDTO) {
+        log.info("Update menu item id : {}", id);
+        MenuItem menuItem = menuItemRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Menu item not found with id: " + id));
+        menuItemMapper.updateMenuItem(menuItemUpdateDTO, menuItem);
+        menuItem = menuItemRepository.save(menuItem);
+        return menuItemMapper.toMenuItemResponseDTO(menuItem);
+    }
+
+    @Override
+    @Transactional
+    public void deleteMenuItem(Long id) {
+        log.info("Delete menu item id : {}", id);
+        if (!menuItemRepository.existsById(id)) {
+            throw new IllegalArgumentException("Menu item not found with id: " + id);
+        }
+        menuItemRepository.deleteById(id);
+
     }
 }

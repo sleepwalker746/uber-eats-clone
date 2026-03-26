@@ -2,6 +2,7 @@ package com.august.restaurant.controller;
 
 import com.august.restaurant.dto.restaurantdto.RestaurantRequestDTO;
 import com.august.restaurant.dto.restaurantdto.RestaurantResponseDTO;
+import com.august.restaurant.dto.restaurantdto.RestaurantUpdateDTO;
 import com.august.restaurant.service.interfaces.RestaurantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,8 @@ public class RestaurantController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RestaurantResponseDTO> register(@Valid @RequestBody RestaurantRequestDTO restaurantRequestDTO) {
+    public ResponseEntity<RestaurantResponseDTO> register(
+            @Valid @RequestBody RestaurantRequestDTO restaurantRequestDTO) {
         log.info("Registering restaurant with name : {}", restaurantRequestDTO.getName());
         RestaurantResponseDTO restaurantResponseDTO = restaurantService.createRestaurant(restaurantRequestDTO);
         return ResponseEntity.ok(restaurantResponseDTO);
@@ -37,5 +39,21 @@ public class RestaurantController {
         return ResponseEntity.ok(responsePage);
     }
 
+    @PatchMapping("/{restaurantId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<RestaurantResponseDTO> updateRestaurant(
+            @PathVariable Long restaurantId,
+            @RequestBody RestaurantUpdateDTO restaurantUpdateDTO) {
+        log.info("Updating restaurant with id {}", restaurantUpdateDTO.getName());
+        return  ResponseEntity.ok(restaurantService.updateRestaurant(restaurantId, restaurantUpdateDTO));
+    }
+
+    @DeleteMapping("/{restaurantId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteRestaurant(@PathVariable Long restaurantId) {
+        log.info("Deleting restaurant with id {}", restaurantId);
+        restaurantService.deleteRestaurant(restaurantId);
+        return ResponseEntity.noContent().build();
+    }
 
 }

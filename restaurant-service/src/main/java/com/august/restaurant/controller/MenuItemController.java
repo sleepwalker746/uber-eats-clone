@@ -2,6 +2,7 @@ package com.august.restaurant.controller;
 
 import com.august.restaurant.dto.menuitemdto.MenuItemRequestDTO;
 import com.august.restaurant.dto.menuitemdto.MenuItemResponseDTO;
+import com.august.restaurant.dto.menuitemdto.MenuItemUpdateDTO;
 import com.august.restaurant.service.interfaces.MenuItemService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +17,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/categories/{categoryId}/items")
+@RequestMapping("/api/v1")
 public class MenuItemController {
 
     private final MenuItemService menuItemService;
 
-    @PostMapping
+    @PostMapping("/categories/{categoryId}/items")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MenuItemResponseDTO> createMenuItem(@PathVariable Long categoryId,
                                                               @Valid @RequestBody MenuItemRequestDTO menuItemRequestDTO) {
@@ -29,9 +30,22 @@ public class MenuItemController {
         return ResponseEntity.ok(menuItemService.createMenuItem(categoryId, menuItemRequestDTO));
     }
 
-    @GetMapping
+    @GetMapping("/categories/{categoryId}/items")
     public ResponseEntity<Page<MenuItemResponseDTO>> getAllMenuItems(@PathVariable Long categoryId,
                                                                      @PageableDefault Pageable pageable) {
         return ResponseEntity.ok(menuItemService.getAllMenuItems(categoryId, pageable));
+    }
+    @PatchMapping("/items/{itemId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<MenuItemResponseDTO> updateMenuItem(@PathVariable Long itemId,
+                                                              @Valid @RequestBody MenuItemUpdateDTO menuItemUpdateDTO) {
+        log.info("Updating food with name : {}", menuItemUpdateDTO.getName());
+        return ResponseEntity.ok(menuItemService.updateMenuItem(itemId, menuItemUpdateDTO));
+    }
+    @DeleteMapping("/items/{itemId}")
+    public ResponseEntity<Void> deleteMenuItem(@PathVariable Long itemId) {
+        log.info("Deleting food with name : {}", itemId);
+        menuItemService.deleteMenuItem(itemId);
+        return ResponseEntity.noContent().build();
     }
 }

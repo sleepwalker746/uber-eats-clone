@@ -1,5 +1,8 @@
 package com.august.restaurant.dto.restaurantdto;
 
+import lombok.Getter;
+
+@Getter
 public class RestaurantUpdateDTO {
 
     private String name;
