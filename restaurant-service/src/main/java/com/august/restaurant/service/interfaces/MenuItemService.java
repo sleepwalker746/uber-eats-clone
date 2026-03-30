@@ -6,11 +6,14 @@ import com.august.restaurant.dto.menuitemdto.MenuItemUpdateDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface MenuItemService {
 
     MenuItemResponseDTO createMenuItem(Long categoryId, MenuItemRequestDTO menuItemRequestDTO);
     Page<MenuItemResponseDTO> getAllMenuItems(Long categoryId, Pageable pageable);
     MenuItemResponseDTO updateMenuItem(Long id, MenuItemUpdateDTO menuItemUpdateDTO);
     void deleteMenuItem(Long id);
+    List<MenuItemResponseDTO> getMenuItemByIds(List<Long> ids);
 
 }

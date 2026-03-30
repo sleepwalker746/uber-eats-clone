@@ -5,17 +5,19 @@ import com.august.order.dto.OrderResponseDTO;
 import com.august.order.entity.Order;
 import org.mapstruct.*;
 
+import java.util.List;
+
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface OrderMapper {
 
-    @Mapping(source = "items", target = "orderItems")
+    @Mapping(source = "orderItemRequestDTOList", target = "orderItems")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "orderStatus",  ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "totalPrice", ignore = true)
     Order toEntity(OrderRequestDTO orderRequestDTO);
 
-    @Mapping(source = "orderItems", target = "items")
+    @Mapping(source = "orderItems", target = "orderItems")
     OrderResponseDTO toResponseDTO(Order order);
 
     @AfterMapping

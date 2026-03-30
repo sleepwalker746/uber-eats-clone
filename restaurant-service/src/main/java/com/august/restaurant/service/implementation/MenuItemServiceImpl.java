@@ -16,6 +16,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -37,7 +39,7 @@ public class MenuItemServiceImpl implements MenuItemService {
         menuItem.setIsAvailable(true);
 
         MenuItem savedMenuItem = menuItemRepository.save(menuItem);
-        return menuItemMapper.toDto(savedMenuItem);
+        return menuItemMapper.toMenuItemResponseDTO(savedMenuItem);
 
     }
 
@@ -74,5 +76,11 @@ public class MenuItemServiceImpl implements MenuItemService {
         }
         menuItemRepository.deleteById(id);
 
+    }
+
+    @Override
+    public List<MenuItemResponseDTO> getMenuItemByIds(List<Long> ids) {
+        List<MenuItem> menuItems = menuItemRepository.findByIdIn(ids);
+        return menuItemMapper.toDtoList(menuItems);
     }
 }

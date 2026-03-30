@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @Slf4j
 @RequiredArgsConstructor
@@ -43,9 +45,14 @@ public class MenuItemController {
         return ResponseEntity.ok(menuItemService.updateMenuItem(itemId, menuItemUpdateDTO));
     }
     @DeleteMapping("/items/{itemId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteMenuItem(@PathVariable Long itemId) {
-        log.info("Deleting food with name : {}", itemId);
+        log.info("Deleting food with id : {}", itemId);
         menuItemService.deleteMenuItem(itemId);
         return ResponseEntity.noContent().build();
+    }
+    @GetMapping("/items")
+    public ResponseEntity<List<MenuItemResponseDTO>> getMenuItemsByIds(@RequestParam List<Long> ids) {
+        return ResponseEntity.ok(menuItemService.getMenuItemByIds(ids));
     }
 }

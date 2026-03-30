@@ -17,6 +17,10 @@ spring:
               uri: lb://RESTAURANT-SERVICE
               predicates:
                 - Path=/api/v1/restaurants/**, /api/v1/categories/**, /api/v1/items/**
+            - id: order-service-route
+              uri: lb://ORDER-SERVICE
+              predicates:
+                - Path=/api/v1/order/**
 eureka:
   client:
     service-url:
