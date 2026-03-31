@@ -86,4 +86,12 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
         restaurantRepository.deleteById(id);
     }
+
+    @Override
+    public RestaurantResponseDTO getRestaurantById(Long id) {
+        log.info("Fetching restaurant by id {}", id);
+        Restaurant restaurant = restaurantRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurant with id not found: " + id));
+        return  restaurantMapper.toDTO(restaurant);
+    }
 }

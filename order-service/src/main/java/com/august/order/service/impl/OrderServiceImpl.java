@@ -3,6 +3,7 @@ package com.august.order.service.impl;
 import com.august.order.client.RestaurantClient;
 import com.august.order.dto.OrderRequestDTO;
 import com.august.order.dto.OrderResponseDTO;
+import com.august.order.dto.RestaurantDTO;
 import com.august.order.dto.RestaurantMenuItemDTO;
 import com.august.order.entity.Order;
 import com.august.order.entity.OrderItem;
@@ -51,6 +52,9 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderMapper.toEntity(orderRequestDTO);
         order.setOrderStatus(OrderStatus.CREATED);
 
+        RestaurantDTO restaurantDTO = restaurantClient.getRestaurantById(orderRequestDTO.getRestaurantId());
+        order.setPickupAddress(restaurantDTO.getAddress());
+
         List<Long> menuItemsId = order.getOrderItems()
                 .stream()
                 .map(OrderItem::getMenuItemId)
@@ -76,7 +80,6 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setUserId(getCurrentUserId());
-        order.setPickupAddress("Restaurant Address");
         order.setItemsPrice(itemsTotalPrice);
         order.setDeliveryPrice(DELIVERY_PRICE);
         order.setTotalPrice(itemsTotalPrice.add(DELIVERY_PRICE));

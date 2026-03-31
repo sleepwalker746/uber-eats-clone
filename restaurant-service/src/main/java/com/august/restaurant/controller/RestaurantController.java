@@ -39,6 +39,13 @@ public class RestaurantController {
         return ResponseEntity.ok(responsePage);
     }
 
+    @GetMapping("/{restaurantId}")
+    public ResponseEntity<RestaurantResponseDTO> getRestaurantById(@PathVariable Long restaurantId) {
+        log.info("Fetching restaurant with id {}", restaurantId);
+        RestaurantResponseDTO restaurantResponseDTO = restaurantService.getRestaurantById(restaurantId);
+        return ResponseEntity.ok(restaurantResponseDTO);
+    }
+
     @PatchMapping("/{restaurantId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RestaurantResponseDTO> updateRestaurant(
@@ -55,5 +62,6 @@ public class RestaurantController {
         restaurantService.deleteRestaurant(restaurantId);
         return ResponseEntity.noContent().build();
     }
+
 
 }

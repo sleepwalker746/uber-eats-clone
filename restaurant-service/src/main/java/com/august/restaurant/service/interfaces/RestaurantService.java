@@ -11,5 +11,6 @@ public interface RestaurantService {
     Page<RestaurantResponseDTO> getAllActiveRestaurants(int page, int size);
     RestaurantResponseDTO updateRestaurant(Long id, RestaurantUpdateDTO restaurantUpdateDTO);
     void deleteRestaurant(Long id);
+    RestaurantResponseDTO getRestaurantById(Long id);
 
 }
