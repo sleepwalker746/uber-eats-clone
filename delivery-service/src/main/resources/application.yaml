@@ -4,12 +4,16 @@ server:
 spring:
   application:
     name: delivery-service
-
-  datasource:
-    url: jdbc:postgresql://localhost:5432/${DB_NAME}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
+  mongodb:
+    uri: mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@localhost:27017/uber_eats_delivery?authSource=admin
+  data:
+    mongodb:
+      auto-index-creation: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
 
 eureka:
   client:

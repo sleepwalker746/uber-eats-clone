@@ -1,5 +1,6 @@
 package com.august.order.service.impl;
 
+import com.august.common.event.OrderCreatedEvent;
 import com.august.order.client.RestaurantClient;
 import com.august.order.dto.OrderRequestDTO;
 import com.august.order.dto.OrderResponseDTO;
@@ -13,6 +14,7 @@ import com.august.order.repository.OrderRepository;
 import com.august.order.service.OrderService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
     private final RestaurantClient  restaurantClient;
+    private final ApplicationEventPublisher applicationEventPublisher;
     private static final BigDecimal DELIVERY_PRICE = BigDecimal.valueOf(1);
 
     private Long getCurrentUserId() {
@@ -40,7 +43,7 @@ public class OrderServiceImpl implements OrderService {
                 return Long.valueOf(userIdClaim.toString());
             }
         }
-        throw new RuntimeException("Не удалось найти userId в токене. Перелогиньтесь!");
+        throw new RuntimeException("Couldn't find the userId in the token. Please log in again!");
     }
 
     @Override
@@ -85,6 +88,15 @@ public class OrderServiceImpl implements OrderService {
         order.setTotalPrice(itemsTotalPrice.add(DELIVERY_PRICE));
 
         Order savedOrder = orderRepository.save(order);
+
+        OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent(
+                savedOrder.getId(),
+                savedOrder.getUserId(),
+                savedOrder.getRestaurantId(),
+                savedOrder.getTotalPrice()
+        );
+
+        applicationEventPublisher.publishEvent(orderCreatedEvent);
 
         return orderMapper.toResponseDTO(savedOrder);
     }

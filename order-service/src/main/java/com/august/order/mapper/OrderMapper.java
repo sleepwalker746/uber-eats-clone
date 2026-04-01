@@ -5,8 +5,6 @@ import com.august.order.dto.OrderResponseDTO;
 import com.august.order.entity.Order;
 import org.mapstruct.*;
 
-import java.util.List;
-
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface OrderMapper {
 
