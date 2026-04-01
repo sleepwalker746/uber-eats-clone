@@ -5,12 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.ZonedDateTime;
-
+import java.math.BigDecimal;
+import java.time.Instant;
 
 @Entity
-@Table(name = "name")
+@Table(name = "payments")
 @Data
 @Builder
 @NoArgsConstructor
@@ -21,23 +22,28 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column()
+    @Column(nullable = false)
+    private Long restaurantId;
+
+    @Column(nullable = false)
     private Long orderId;
 
-    @Column()
+    @Column(nullable = false)
     private Long userId;
 
-    @Column()
-    private Long totalPrice;
+    @Column(nullable = false)
+    private BigDecimal totalPrice;
 
-    @Column()
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
 
-    @Column()
     private String transactionId;
 
-    @Column()
-    private ZonedDateTime createdAt;
+    private String failureReason;
+
+    @Column(nullable = false)
+    @CreationTimestamp
+    private Instant createdAt;
 
 }

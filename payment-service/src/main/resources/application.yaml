@@ -4,6 +4,9 @@ server:
 spring:
   application:
     name: payment-service
+  jpa:
+    hibernate:
+      ddl-auto: update
 
   rabbitmq:
     host: localhost

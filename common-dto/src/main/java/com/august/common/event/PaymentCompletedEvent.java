@@ -1,6 +1,7 @@
 package com.august.common.event;
 
 public record PaymentCompletedEvent(
+        Long restaurantId,
         Long orderId
 ) {
 }
