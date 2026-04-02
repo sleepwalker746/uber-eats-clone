@@ -3,6 +3,7 @@ package com.august.restaurant.controller;
 import com.august.restaurant.dto.restaurantdto.RestaurantRequestDTO;
 import com.august.restaurant.dto.restaurantdto.RestaurantResponseDTO;
 import com.august.restaurant.dto.restaurantdto.RestaurantUpdateDTO;
+import com.august.restaurant.service.interfaces.RestaurantOrderService;
 import com.august.restaurant.service.interfaces.RestaurantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class RestaurantController {
 
     private final RestaurantService restaurantService;
+    private final RestaurantOrderService restaurantOrderService;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -63,5 +65,10 @@ public class RestaurantController {
         return ResponseEntity.noContent().build();
     }
 
-
+    @PostMapping("/{orderId}/ready")
+    public ResponseEntity<Void> markOrderAsReady(@PathVariable Long orderId) {
+        log.info("Marking order as ready for restaurant with id {}", orderId);
+        restaurantOrderService.markOrderAsReady(orderId);
+        return ResponseEntity.ok().build();
+    }
 }

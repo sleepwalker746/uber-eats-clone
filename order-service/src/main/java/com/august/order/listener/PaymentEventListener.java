@@ -1,5 +1,6 @@
 package com.august.order.listener;
 
+import com.august.common.event.OrderPaidEvent;
 import com.august.common.event.PaymentCompletedEvent;
 import com.august.common.event.PaymentFailedEvent;
 import com.august.order.entity.Order;
@@ -13,6 +14,7 @@ import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Component;
 public class PaymentEventListener {
 
     private final OrderRepository orderRepository;
+    private final RabbitTemplate rabbitTemplate;
 
     @Transactional
     @RabbitListener(bindings = @QueueBinding(
@@ -59,6 +62,15 @@ public class PaymentEventListener {
         order.setOrderStatus(OrderStatus.PAID);
         orderRepository.save(order);
 
+        rabbitTemplate.convertAndSend(
+                "order.exchange",
+                "order.paid",
+                new OrderPaidEvent(
+                        order.getId(),
+                        order.getRestaurantId(),
+                        order.getDeliveryAddress()
+                )
+        );
     }
 
 }

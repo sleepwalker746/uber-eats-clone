@@ -35,10 +35,3 @@ public class Delivery {
     private Instant deliveredAt;
 
 }
-
-@Data
-class Address {
-    private String address;
-    private Double latitude;
-    private Double longitude;
-}
