@@ -53,14 +53,14 @@ public class PaymentListener {
         payment.setPaymentStatus(PaymentStatus.FAILED);
         payment.setFailureReason("Not enough funds on the card");
         paymentRepository.save(payment);
-        log.info("ПЛОХО НАСРАЛ");
+        log.info("Payment failed for order {}: {}", event.orderId(), payment.getFailureReason());
         rabbitTemplate.convertAndSend("payment.exchange", "payment.failed",
                 new PaymentFailedEvent(event.orderId(), payment.getRestaurantId(), payment.getFailureReason()));
 
     } else {
         payment.setPaymentStatus(PaymentStatus.SUCCESS);
         paymentRepository.save(payment);
-        log.info("НАСРАЛ");
+        log.info("Payment completed for order {}", event.orderId());
         rabbitTemplate.convertAndSend("payment.exchange", "payment.completed",
                 new PaymentCompletedEvent(event.restaurantId(), event.orderId()));
 
