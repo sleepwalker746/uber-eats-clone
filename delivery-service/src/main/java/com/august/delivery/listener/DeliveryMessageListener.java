@@ -1,6 +1,8 @@
 package com.august.delivery.listener;
 
 import com.august.common.event.OrderPaidEvent;
+import com.august.common.event.OrderPreparingEvent;
+import com.august.common.event.OrderReadyEvent;
 import com.august.delivery.document.Delivery;
 import com.august.delivery.document.DeliveryStatus;
 import com.august.delivery.mapper.DeliveryMapper;
@@ -41,4 +43,56 @@ public class DeliveryMessageListener {
         deliveryRepository.save(delivery);
         log.info("Delivery initialized and waiting for kitchen for order №{}", event.orderId());
     }
+
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(value = "delivery.order.preparing.queue", durable = "true"),
+            exchange = @Exchange(value = "restaurant.exchange", type = ExchangeTypes.TOPIC),
+            key = "restaurant.order.preparing"
+    ))
+    public void handleOrderPreparing(OrderPreparingEvent event) {
+        log.info("Restaurant has started preparing order №{}. Looking for courier...", event.orderId());
+
+        Delivery delivery = deliveryRepository.findByOrderId(event.orderId())
+                .orElseThrow(() -> new RuntimeException("Delivery Not Found for order: " + event.orderId()));
+
+        delivery.setStatus(DeliveryStatus.SEARCHING_COURIER);
+
+        deliveryRepository.save(delivery);
+
+        log.info("Order Delivery Status №{} has been changed on SEARCHING_COURIER", event.orderId());
+    }
+
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(value = "delivery.order.ready.queue", durable = "true"),
+            exchange = @Exchange(value = "restaurant.exchange", type = ExchangeTypes.TOPIC),
+            key = "restaurant.order.ready"
+
+    ))
+    public void handleOrderReadyEvent(OrderReadyEvent event) {
+
+        log.info("Restaurant has prepared an order №{}. Hanging to courier...", event.orderId());
+
+        Delivery delivery = deliveryRepository.findByOrderId(event.orderId())
+                .orElseThrow(() -> new RuntimeException("Delivery Not Found for order: " + event.orderId()));
+
+        if(delivery.getStatus() != DeliveryStatus.COURIER_ASSIGNED) {
+            log.warn("Warning! Order №{} is ready, but order status is {} ", event.orderId(), delivery.getStatus());
+        }
+
+        delivery.setStatus(DeliveryStatus.DELIVERING);
+        delivery.setPickedUpAt(Instant.now());
+
+        deliveryRepository.save(delivery);
+
+        log.info("Courier №{} took an order and on it's way to the customer", delivery.getCourierId());
+    }
+
+
+
+
+
+
+
+
+
 }

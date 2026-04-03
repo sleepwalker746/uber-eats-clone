@@ -1,5 +1,6 @@
 package com.august.restaurant.listener;
 
+import com.august.common.event.OrderPreparingEvent;
 import com.august.common.event.PaymentCompletedEvent;
 import com.august.common.event.PaymentFailedEvent;
 import com.august.restaurant.entity.OrderStatus;
@@ -15,6 +16,7 @@ import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -24,6 +26,7 @@ public class PaymentEventListener {
 
     private final RestaurantOrderRepository restaurantOrderRepository;
     private final RestaurantRepository restaurantRepository;
+    private final RabbitTemplate rabbitTemplate;
 
     private RestaurantOrder getOrCreateRestaurantOrder(Long orderId, Long restaurantId) {
         return restaurantOrderRepository.findByOrderId(orderId)
@@ -59,6 +62,13 @@ public class PaymentEventListener {
                 event.restaurantId(),
                 OrderStatus.PREPARING
         );
+
+        rabbitTemplate.convertAndSend(
+                "restaurant.exchange",
+                "restaurant.order.preparing",
+                new OrderPreparingEvent(event.orderId(), event.restaurantId())
+        );
+
     }
 
     @Transactional

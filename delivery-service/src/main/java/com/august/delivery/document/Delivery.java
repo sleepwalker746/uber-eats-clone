@@ -23,7 +23,7 @@ public class Delivery {
     private Long restaurantId;
     private Long customerId;
 
-    private String courierId;
+    private Long courierId;
 
     private DeliveryStatus status;
 
