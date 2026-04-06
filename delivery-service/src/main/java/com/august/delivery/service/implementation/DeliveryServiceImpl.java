@@ -1,11 +1,13 @@
 package com.august.delivery.service.implementation;
 
+import com.august.common.event.OrderDeliveredEvent;
 import com.august.delivery.document.Delivery;
 import com.august.delivery.document.DeliveryStatus;
 import com.august.delivery.repository.DeliveryRepository;
 import com.august.delivery.service.DeliveryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeliveryServiceImpl implements DeliveryService {
 
     private final DeliveryRepository  deliveryRepository;
+    private final RabbitTemplate rabbitTemplate;
 
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -68,5 +71,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         deliveryRepository.save(delivery);
 
         log.info("Delivery has been completed for order with id {}", orderId);
+
+        rabbitTemplate.convertAndSend("delivery.exchange", "delivery.order.delivered", new OrderDeliveredEvent(orderId));
     }
 }
