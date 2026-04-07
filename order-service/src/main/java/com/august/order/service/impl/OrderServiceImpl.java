@@ -12,18 +12,24 @@ import com.august.order.entity.Order;
 import com.august.order.entity.OrderItem;
 import com.august.order.entity.OrderStatus;
 import com.august.order.mapper.OrderMapper;
+import com.august.order.outbox.OutboxEvent;
+import com.august.order.outbox.OutboxRepository;
+import com.august.order.outbox.OutboxStatus;
 import com.august.order.repository.OrderRepository;
 import com.august.order.service.OrderService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,8 +39,9 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
-    private final RestaurantClient  restaurantClient;
-    private final ApplicationEventPublisher applicationEventPublisher;
+    private final ObjectMapper objectMapper;
+    private final OutboxRepository outboxRepository;
+    private final RestaurantClient restaurantClient;
     private static final BigDecimal DELIVERY_PRICE = BigDecimal.valueOf(1);
 
     private Long getCurrentUserId() {
@@ -77,7 +84,7 @@ public class OrderServiceImpl implements OrderService {
             RestaurantMenuItemDTO fetchedItem = fetchedMenuItems.get(orderItem.getMenuItemId());
 
             if (fetchedItem == null) {
-                throw new RuntimeException("Блюдо с id " + orderItem.getMenuItemId() + " не найдено в ответе ресторана!");
+                throw new RuntimeException("Dish with id " + orderItem.getMenuItemId() + " not found in the restaurant's response!");
             }
 
             orderItem.setName(fetchedItem.getName());
@@ -94,14 +101,30 @@ public class OrderServiceImpl implements OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent(
-                savedOrder.getId(),
-                savedOrder.getUserId(),
-                savedOrder.getRestaurantId(),
-                savedOrder.getTotalPrice()
-        );
+        try {
+            OutboxEvent outboxEvent = OutboxEvent.builder()
+                    .id(UUID.randomUUID())
+                    .aggregateType("Order")
+                    .aggregateId(savedOrder.getId().toString())
+                    .type("OrderCreatedEvent")
+                    .payload(objectMapper.writeValueAsString(
+                            new OrderCreatedEvent(
+                                    savedOrder.getId(),
+                                    savedOrder.getUserId(),
+                                    savedOrder.getRestaurantId(),
+                                    savedOrder.getTotalPrice()
+                            )
+                    ))
+                    .status(OutboxStatus.NEW)
+                    .retryCount(0)
+                    .createdAt(Instant.now())
+                    .build();
 
-        applicationEventPublisher.publishEvent(orderCreatedEvent);
+            outboxRepository.save(outboxEvent);
+
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize OrderCreatedEvent", e);
+        }
 
         return orderMapper.toResponseDTO(savedOrder);
     }

@@ -5,15 +5,22 @@ import com.august.common.event.OrderReadyEvent;
 import com.august.restaurant.entity.OrderStatus;
 import com.august.restaurant.entity.Restaurant;
 import com.august.restaurant.entity.RestaurantOrder;
+import com.august.restaurant.outbox.OutboxEvent;
+import com.august.restaurant.outbox.OutboxRepository;
+import com.august.restaurant.outbox.OutboxStatus;
 import com.august.restaurant.repository.RestaurantOrderRepository;
 import com.august.restaurant.repository.RestaurantRepository;
 import com.august.restaurant.service.interfaces.RestaurantOrderService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -22,9 +29,30 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
 
     private final RestaurantOrderRepository restaurantOrderRepository;
     private final RestaurantRepository restaurantRepository;
-    private final RabbitTemplate rabbitTemplate;
+    private final OutboxRepository outboxRepository;
+    private final ObjectMapper objectMapper;
+
+    private OutboxEvent buildOutboxEvent(String aggregateType,
+                                         String aggregateId,
+                                         Object payload) {
+        try {
+            return OutboxEvent.builder()
+                    .id(UUID.randomUUID())
+                    .aggregateType(aggregateType)
+                    .aggregateId(aggregateId)
+                    .payload(objectMapper.writeValueAsString(payload))
+                    .status(OutboxStatus.NEW)
+                    .retryCount(0)
+                    .createdAt(Instant.now())
+                    .build();
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize event: ", e);
+        }
+    }
+
 
     @Override
+    @Transactional
     public void markOrderAsReady(Long orderId) {
 
         RestaurantOrder order = restaurantOrderRepository.findByOrderId(orderId)
@@ -39,7 +67,13 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
 
         log.info("Restaurant Order №{} Marked as Ready", orderId);
 
-        rabbitTemplate.convertAndSend("restaurant.exchange", "restaurant.order.ready", new OrderReadyEvent(orderId, order.getRestaurant().getId()));
+        OutboxEvent outboxEvent = buildOutboxEvent(
+                "RestaurantOrder",
+                orderId.toString(),
+                new OrderReadyEvent(orderId, order.getRestaurant().getId())
+        );
+
+        outboxRepository.save(outboxEvent);
 
     }
 
