@@ -1,6 +1,8 @@
 package com.august.order.service.impl;
 
 import com.august.common.event.OrderCreatedEvent;
+import com.august.common.event.OrderDeliveredEvent;
+import com.august.common.event.OrderDeliveringEvent;
 import com.august.order.client.RestaurantClient;
 import com.august.order.dto.OrderRequestDTO;
 import com.august.order.dto.OrderResponseDTO;
@@ -21,6 +23,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -65,21 +69,22 @@ public class OrderServiceImpl implements OrderService {
 
         List<RestaurantMenuItemDTO> fetchedItems = restaurantClient.getItems(menuItemsId);
 
-        for (OrderItem item : order.getOrderItems()) {
-            RestaurantMenuItemDTO fetchedItemForOrderItem = fetchedItems
-                    .stream()
-                    .filter(f -> f.getId().equals(item.getMenuItemId()))
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("Meal with id " + item.getMenuItemId() + " not found"));
+        Map<Long, RestaurantMenuItemDTO> fetchedMenuItems = fetchedItems
+                .stream()
+                .collect(Collectors.toMap(RestaurantMenuItemDTO::getId, i -> i));
 
-            item.setName(fetchedItemForOrderItem.getName());
-            item.setPrice(fetchedItemForOrderItem.getPrice());
+        for (OrderItem orderItem : order.getOrderItems()) {
+            RestaurantMenuItemDTO fetchedItem = fetchedMenuItems.get(orderItem.getMenuItemId());
 
-            BigDecimal countPrice = item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+            if (fetchedItem == null) {
+                throw new RuntimeException("Блюдо с id " + orderItem.getMenuItemId() + " не найдено в ответе ресторана!");
+            }
 
+            orderItem.setName(fetchedItem.getName());
+            orderItem.setPrice(fetchedItem.getPrice());
+
+            BigDecimal countPrice = orderItem.getPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity()));
             itemsTotalPrice = itemsTotalPrice.add(countPrice);
-
-
         }
 
         order.setUserId(getCurrentUserId());
@@ -101,6 +106,44 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toResponseDTO(savedOrder);
     }
 
+    @Override
+    @Transactional
+    public void handleOrderDeliveringEvent(OrderDeliveringEvent event) {
+
+        Order order = orderRepository.findById(event.orderId())
+                .orElseThrow(() -> new RuntimeException("Order with id: " + event.orderId() + "not found!"));
+
+        if(OrderStatus.DELIVERING.equals(order.getOrderStatus())) {
+            return;
+        }
+
+        if(OrderStatus.CANCELED.equals(order.getOrderStatus())) {
+            throw new IllegalArgumentException("Order with id: " + event.orderId() + " has been cancelled!");
+        }
+
+        order.setOrderStatus(OrderStatus.DELIVERING);
+        orderRepository.save(order);
+
+    }
+
+    @Override
+    @Transactional
+    public void handleOrderDeliveredEvent(OrderDeliveredEvent event) {
+
+        Order order = orderRepository.findById(event.orderId())
+                .orElseThrow(() -> new RuntimeException("Order with id: " + event.orderId() + "not found!"));
+
+        if(OrderStatus.DELIVERED.equals(order.getOrderStatus())) {
+            return;
+        }
+
+        if(OrderStatus.CANCELED.equals(order.getOrderStatus())) {
+            throw new IllegalArgumentException("Order with id: " + event.orderId() + " has been cancelled!");
+        }
+
+        order.setOrderStatus(OrderStatus.DELIVERED);
+        orderRepository.save(order);
+    }
 
 
 }

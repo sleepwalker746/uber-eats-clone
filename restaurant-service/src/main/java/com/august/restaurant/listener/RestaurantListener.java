@@ -6,6 +6,7 @@ import com.august.restaurant.entity.Restaurant;
 import com.august.restaurant.entity.RestaurantOrder;
 import com.august.restaurant.repository.RestaurantOrderRepository;
 import com.august.restaurant.repository.RestaurantRepository;
+import com.august.restaurant.service.interfaces.RestaurantOrderService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +23,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class RestaurantListener {
 
-    private final RestaurantOrderRepository restaurantOrderRepository;
-    private final RestaurantRepository restaurantRepository;
+    private final RestaurantOrderService restaurantOrderService;
 
     @Transactional
     @RabbitListener(bindings = @QueueBinding(
@@ -32,30 +32,11 @@ public class RestaurantListener {
             key = "order.created"
     ))
     public void handleOrderCreated(OrderCreatedEvent event) {
-
-       log.info("Received Order Created Event");
-
-       if (restaurantOrderRepository.existsByOrderId(event.orderId())) {
-           return;
-       }
-
-       try {
-
-           RestaurantOrder restaurantOrder = new RestaurantOrder();
-           restaurantOrder.setOrderId(event.orderId());
-
-           Restaurant restaurant = restaurantRepository.findById(event.restaurantId())
-                   .orElseThrow(() -> new RuntimeException("Restaurant not found"));
-
-           restaurantOrder.setRestaurant(restaurant);
-           restaurantOrder.setOrderStatus(OrderStatus.WAITING_FOR_PAYMENT);
-
-           restaurantOrderRepository.save(restaurantOrder);
-           log.info("Order Created Successfully");
-
-       } catch (DataIntegrityViolationException e) {
-
-           log.info("Race conditions violated");
-       }
+        try {
+            restaurantOrderService.handleOrderCreatedEvent(event);
+        } catch (Exception e) {
+            log.error("Error processing OrderPaidEvent {}", event.orderId(), e);
+            throw e;
+        }
     }
 }

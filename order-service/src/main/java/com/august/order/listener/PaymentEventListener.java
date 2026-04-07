@@ -1,11 +1,8 @@
 package com.august.order.listener;
 
-import com.august.common.event.OrderPaidEvent;
 import com.august.common.event.PaymentCompletedEvent;
 import com.august.common.event.PaymentFailedEvent;
-import com.august.order.entity.Order;
-import com.august.order.entity.OrderStatus;
-import com.august.order.repository.OrderRepository;
+import com.august.order.service.PaymentService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +11,6 @@ import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -22,8 +18,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PaymentEventListener {
 
-    private final OrderRepository orderRepository;
-    private final RabbitTemplate rabbitTemplate;
+    private final PaymentService paymentService;
 
     @Transactional
     @RabbitListener(bindings = @QueueBinding(
@@ -33,20 +28,9 @@ public class PaymentEventListener {
     ))
     public void handlePaymentFailed(PaymentFailedEvent event) {
 
-        log.error("Error message about payment for the order №{}. Reason: {}", event.orderId(), event.reason());
+        paymentService.handlePaymentFailedEvent(event);
 
-        Order order = orderRepository.findById(event.orderId())
-                .orElseThrow(() -> new RuntimeException("Order not found: " + event.orderId()));
-
-        if(order.getOrderStatus() == OrderStatus.CANCELED) {
-            return;
         }
-
-        order.setOrderStatus(OrderStatus.CANCELED);
-        orderRepository.save(order);
-
-        log.info("Saga refund has been processed: Status order №{} has been changed on CANCELED", event.orderId());
-    }
 
     @Transactional
     @RabbitListener(bindings = @QueueBinding(
@@ -54,23 +38,10 @@ public class PaymentEventListener {
             exchange = @Exchange(value = "payment.exchange", type = ExchangeTypes.TOPIC),
             key = "payment.completed"
     ))
-    public void handlePaymentSuccess(PaymentCompletedEvent event) {
-        log.info("Order №{} was paid", event.orderId());
+    public void handlePaymentCompleted(PaymentCompletedEvent event) {
 
-        Order order = orderRepository.findById(event.orderId())
-                .orElseThrow(() -> new RuntimeException("Order not found: " + event.orderId()));
-        order.setOrderStatus(OrderStatus.PAID);
-        orderRepository.save(order);
+        paymentService.handlePaymentCompletedEvent(event);
 
-        rabbitTemplate.convertAndSend(
-                "order.exchange",
-                "order.paid",
-                new OrderPaidEvent(
-                        order.getId(),
-                        order.getRestaurantId(),
-                        order.getDeliveryAddress()
-                )
-        );
     }
 
 }

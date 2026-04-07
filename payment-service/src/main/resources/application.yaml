@@ -15,7 +15,7 @@ spring:
     password: guest
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/${DB_NAME}
+    url: jdbc:postgresql://localhost:5432/user_eats_clone_payment
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
