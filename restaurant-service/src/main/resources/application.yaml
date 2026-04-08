@@ -6,7 +6,7 @@ spring:
     name: restaurant-service
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
 
   rabbitmq:
     host: localhost

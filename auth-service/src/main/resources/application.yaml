@@ -8,7 +8,7 @@ spring:
     name: auth-service
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
 
   datasource:
     url: jdbc:postgresql://localhost:5432/user_eats_clone_auth

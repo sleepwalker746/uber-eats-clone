@@ -63,6 +63,8 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Override
     public void completeDelivery(Long orderId) {
 
+        log.info("Completing order with id {}", orderId);
+
         Delivery delivery = deliveryRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new RuntimeException("Delivery not found!"));
         if (!delivery.getCourierId().equals(getCurrentUserId())) {
