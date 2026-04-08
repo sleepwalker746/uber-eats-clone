@@ -2,6 +2,7 @@ package com.august.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.flywaydb.core.Flyway;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

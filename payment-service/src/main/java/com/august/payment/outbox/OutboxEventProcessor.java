@@ -3,11 +3,11 @@ package com.august.payment.outbox;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 
-@Service
+@Component
 @RequiredArgsConstructor
 public class OutboxEventProcessor {
     private final OutboxRepository outboxRepository;

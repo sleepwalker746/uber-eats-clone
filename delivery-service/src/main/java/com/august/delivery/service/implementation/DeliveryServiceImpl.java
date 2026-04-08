@@ -9,8 +9,6 @@ import com.august.delivery.service.DeliveryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -101,11 +99,6 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     }
 
-    @Retryable(
-            retryFor = RuntimeException.class,
-            maxAttempts = 4,
-            backoff = @Backoff(delay =  500)
-    )
     @Override
     @Transactional
     public void handleOrderPreparingEvent(OrderPreparingEvent event) {

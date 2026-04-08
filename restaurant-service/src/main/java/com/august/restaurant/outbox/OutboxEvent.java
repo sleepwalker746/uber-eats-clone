@@ -10,6 +10,7 @@ import org.hibernate.type.SqlTypes;
 import java.time.Instant;
 import java.util.UUID;
 
+@Entity
 @Table(name = "outbox_event")
 @Getter
 @Setter

@@ -9,12 +9,15 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-
   datasource:
     url: jdbc:postgresql://localhost:5432/user_eats_clone_auth
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
 
 jwt:
   key: ${JWT_SECRET_KEY}

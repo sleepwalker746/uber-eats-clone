@@ -10,6 +10,11 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     ports:
       - "5432:5432"
     volumes:
@@ -51,6 +56,8 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: eureka-server
+    env_file:
+      - .env
     container_name: uber-eats-eureka
     ports:
       - "8761:8761"
@@ -63,13 +70,16 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: gateway-service
+    env_file:
+      - .env
     container_name: uber-eats-gateway
     ports:
       - "8080:8080"
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     depends_on:
-      - eureka-server
+      eureka-server:
+        condition: service_started
     networks:
       - uber-eats-network
 
@@ -82,6 +92,8 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: auth-service
+    env_file:
+      - .env
     container_name: uber-eats-auth
     ports:
       - "8081:8081"
@@ -91,8 +103,12 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     depends_on:
-      - postgres
-      - eureka-server
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+      eureka-server:
+        condition: service_started
     networks:
       - uber-eats-network
 
@@ -102,6 +118,8 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: order-service
+    env_file:
+      - .env
     container_name: uber-eats-order
     ports:
       - "8083:8083"
@@ -112,9 +130,12 @@ services:
       - SPRING_RABBITMQ_HOST=rabbitmq
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     depends_on:
-      - postgres
-      - rabbitmq
-      - eureka-server
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+      eureka-server:
+        condition: service_started
     networks:
       - uber-eats-network
 
@@ -124,6 +145,8 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: restaurant-service
+    env_file:
+      - .env
     container_name: uber-eats-restaurant
     ports:
       - "8082:8082"
@@ -134,9 +157,12 @@ services:
       - SPRING_RABBITMQ_HOST=rabbitmq
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     depends_on:
-      - postgres
-      - rabbitmq
-      - eureka-server
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+      eureka-server:
+        condition: service_started
     networks:
       - uber-eats-network
 
@@ -146,6 +172,8 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: payment-service
+    env_file:
+      - .env
     container_name: uber-eats-payment
     ports:
       - "8086:8086"
@@ -156,9 +184,12 @@ services:
       - SPRING_RABBITMQ_HOST=rabbitmq
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     depends_on:
-      - postgres
-      - rabbitmq
-      - eureka-server
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+      eureka-server:
+        condition: service_started
     networks:
       - uber-eats-network
 
@@ -168,6 +199,8 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: delivery-service
+    env_file:
+      - .env
     container_name: uber-eats-delivery
     ports:
       - "8084:8084"
@@ -176,9 +209,12 @@ services:
       - SPRING_RABBITMQ_HOST=rabbitmq
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     depends_on:
-      - mongodb
-      - rabbitmq
-      - eureka-server
+      mongodb:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      eureka-server:
+        condition: service_started
     networks:
       - uber-eats-network
 
