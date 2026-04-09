@@ -1,12 +1,9 @@
-version: '3.8'
-
 services:
   # ==========================================
   # 1. DB AND RABBITMQ
   # ==========================================
   postgres:
     image: postgres:16
-    container_name: uber-eats-db
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -25,7 +22,6 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
-    container_name: uber-eats-rabbit
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -36,7 +32,6 @@ services:
 
   mongodb:
     image: mongo:latest
-    container_name: uber-eats-mongo
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
@@ -58,7 +53,6 @@ services:
         SERVICE_NAME: eureka-server
     env_file:
       - .env
-    container_name: uber-eats-eureka
     ports:
       - "8761:8761"
     networks:
@@ -72,7 +66,6 @@ services:
         SERVICE_NAME: gateway-service
     env_file:
       - .env
-    container_name: uber-eats-gateway
     ports:
       - "8080:8080"
     environment:
@@ -94,7 +87,6 @@ services:
         SERVICE_NAME: auth-service
     env_file:
       - .env
-    container_name: uber-eats-auth
     ports:
       - "8081:8081"
     environment:
@@ -120,7 +112,6 @@ services:
         SERVICE_NAME: order-service
     env_file:
       - .env
-    container_name: uber-eats-order
     ports:
       - "8083:8083"
     environment:
@@ -147,7 +138,6 @@ services:
         SERVICE_NAME: restaurant-service
     env_file:
       - .env
-    container_name: uber-eats-restaurant
     ports:
       - "8082:8082"
     environment:
@@ -174,7 +164,6 @@ services:
         SERVICE_NAME: payment-service
     env_file:
       - .env
-    container_name: uber-eats-payment
     ports:
       - "8086:8086"
     environment:
@@ -201,7 +190,6 @@ services:
         SERVICE_NAME: delivery-service
     env_file:
       - .env
-    container_name: uber-eats-delivery
     ports:
       - "8084:8084"
     environment:
@@ -211,6 +199,27 @@ services:
     depends_on:
       mongodb:
         condition: service_started
+      rabbitmq:
+        condition: service_started
+      eureka-server:
+        condition: service_started
+    networks:
+      - uber-eats-network
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: notification-service
+    env_file:
+      - .env
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
       rabbitmq:
         condition: service_started
       eureka-server:
