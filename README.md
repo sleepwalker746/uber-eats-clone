@@ -92,3 +92,9 @@ You should see the following instances successfully registered and showing a sta
 ## 📝 Developer Notes & Troubleshooting
 
 1. **Database Initialization:** The databases for the microservices are automatically created upon the first launch of the `postgres` container using the `init-databases.sql` script. Ensure this file is correctly mounted in the `docker-compose.yml`.
+2. **Database Migrations (Flyway):** Database schema versioning and creation are strictly managed by **Flyway**. 
+   * Migration scripts are located in `src/main/resources/db/migration`.
+   * Flyway is configured with `baseline-on-migrate: true` to seamlessly integrate with environments.
+   * **Hibernate is set to `ddl-auto: validate`**. This ensures that Hibernate makes no unauthorized changes to the database structure. Flyway creates the tables, and Hibernate only validates that the database schema perfectly matches the Java `@Entity` mappings.
+3. **RabbitMQ Connection:** The `notification-service` and other event-driven services rely on RabbitMQ. Ensure the `rabbitmq` container is fully started before testing message-driven flows. Docker Compose handles this automatically via the `depends_on` condition.
+
