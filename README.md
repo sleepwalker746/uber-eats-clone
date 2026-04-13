@@ -98,3 +98,9 @@ You should see the following instances successfully registered and showing a sta
    * **Hibernate is set to `ddl-auto: validate`**. This ensures that Hibernate makes no unauthorized changes to the database structure. Flyway creates the tables, and Hibernate only validates that the database schema perfectly matches the Java `@Entity` mappings.
 3. **RabbitMQ Connection:** The `notification-service` and other event-driven services rely on RabbitMQ. Ensure the `rabbitmq` container is fully started before testing message-driven flows. Docker Compose handles this automatically via the `depends_on` condition.
 
+## 📝 License
+This project is open-source and available under the **Apache License 2.0**.
+
+---
+*Developed by [Arsenii Sidorovych](https://github.com/sleepwalker746)*
+
