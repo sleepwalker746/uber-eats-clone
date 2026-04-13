@@ -45,3 +45,50 @@ Make sure you have the following installed:
   MONGODB_USER=admin
   MONGODB_PASSWORD=your_mongo_password
   JWT_SECRET_KEY=your_super_secret_jwt_key_here
+
+### Step 1: Build the Executables (JARs)
+Before handing the services over to Docker, you need to compile them. Make sure you open your terminal in the **root directory** of the project (where the `gradlew` file is located). 
+
+This command will automatically traverse all your microservice modules (including the newly added `notification-service`) and build their `.jar` files.
+
+**For Windows:**
+```cmd
+gradlew clean build -x test
+```
+**For Mac/Linux**
+```bash
+./gradlew clean build -x test
+```
+
+### Step 2: Run Docker Compose
+Start the infrastructure (Postgres, Mongo, RabbitMQ) and all Spring Boot microservices:
+
+```bash
+# Stop and remove any old containers and volumes
+docker-compose down -v
+
+# Rebuild the Docker images using the fresh JAR files
+docker-compose build --no-cache
+
+# Run everything in the background
+docker-compose up -d
+```
+
+### Step 3: Verify the Deployment
+Wait for about 1-2 minutes for the databases to initialize and the `eureka-server` to start.
+Open your browser and navigate to: **`http://localhost:8761`**
+
+You should see the following instances successfully registered and showing a status of `UP` in Eureka:
+* `GATEWAY-SERVICE`
+* `AUTH-SERVICE`
+* `RESTAURANT-SERVICE`
+* `ORDER-SERVICE`
+* `DELIVERY-SERVICE`
+* `NOTIFICATION-SERVICE`
+* `PAYMENT-SERVICE`
+
+---
+
+## 📝 Developer Notes & Troubleshooting
+
+1. **Database Initialization:** The databases for the microservices are automatically created upon the first launch of the `postgres` container using the `init-databases.sql` script. Ensure this file is correctly mounted in the `docker-compose.yml`.
